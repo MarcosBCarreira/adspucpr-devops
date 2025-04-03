@@ -1,0 +1,24 @@
+name: Continuous Delivery
+permissions:
+  contents: read
+  pull-requests: write
+
+on:
+  push:
+    branches:
+      - main #ou qualquer outra branch (só vai funcionar qdo fizer o merge com a main)
+
+jobs:
+  deliver:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Simulando Continuous Delivery
+        uses: actions/upload-artifact@v4
+        with:
+          name: projetozipado.zip
+          path: |
+            '**.py'
+            README.md
