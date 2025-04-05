@@ -1,10 +1,14 @@
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from typing import Optional
+
 import random
 import json
-
-from fastapi import FastAPI
+import os
 
 app = FastAPI()
 
+#MODELO DO PROFESSOR
 #  http://127.0.0.1:8000/
 @app.get("/helloworld")
 async def root():
@@ -15,10 +19,16 @@ async def root():
 @app.get("/funcaoteste")
 async def funcaoteste():
     return {"teste": True, "num_aleatório: ": random.randint(0, 1000)}
+#=====================================================
 
-# Carregar os dados do arquivo JSON
-with open("lancamentos_despesas_receitas.json", "r", encoding="utf-8") as f:
-    lancamentos = json.load(f)
+DB_PATH = "lancamentos_despesas_receitas.json"
+
+# Carregar os dados do arquivo JSON ou criar novo
+if os.path.exists(DB_PATH):
+    with open(DB_PATH, "r", encoding="utf-8") as f:
+        lancamentos = json.load(f)
+else:
+    lancamentos = []
 
 
 #  http://127.0.0.1:8000/lancamentos
@@ -58,3 +68,36 @@ def resumo():
         "total_receitas": round(total_receitas, 2),
         "saldo": round(saldo, 2)
     }
+
+
+#Testando um metodo POST
+# Modelo para criação de novos lançamentos
+class LancamentoInput(BaseModel):
+    tipo: str  # 'despesa' ou 'receita'
+    data: str  # formato 'YYYY-MM-DD'
+    categoria: str
+    descricao: str
+    valor: float
+    forma_pagamento: Optional[str] = None
+    forma_recebimento: Optional[str] = None
+    efetivado: bool
+
+
+# Função auxiliar para salvar no JSON
+def salvar_dados():
+    with open(DB_PATH, "w", encoding="utf-8") as f:
+        json.dump(lancamentos, f, indent=4, ensure_ascii=False)
+
+
+@app.post("/lancamentos")
+def criar_lancamento(dados: LancamentoInput):
+    novo_id = max([l["id"] for l in lancamentos], default=0) + 1
+
+    novo_lancamento = {
+        "id": novo_id,
+        **dados.dict()
+    }
+
+    lancamentos.append(novo_lancamento)
+    salvar_dados()
+    return {"mensagem": "Lançamento criado com sucesso!", "lancamento": novo_lancamento}

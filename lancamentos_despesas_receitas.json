@@ -548,5 +548,16 @@
         "forma_pagamento": null,
         "forma_recebimento": "Depósito",
         "efetivado": true
+    },
+    {
+        "id": 51,
+        "tipo": "despesa",
+        "data": "2024-04-01",
+        "categoria": "Alimentação",
+        "descricao": "Mercado da semana",
+        "valor": 120.5,
+        "forma_pagamento": "Cartão de Crédito",
+        "forma_recebimento": null,
+        "efetivado": true
     }
 ]
