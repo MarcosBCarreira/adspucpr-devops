@@ -1,10 +1,12 @@
+import random
+import json
+import os
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Optional
 
-import random
-import json
-import os
+
 
 app = FastAPI()
 
