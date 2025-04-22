@@ -1,6 +1,8 @@
+import pytest
+from fastapi import HTTPException
+
 from src.main import *
 
-DB_PATH = "../lancamentos_despesas_receitas.json"
 
 # Carregar os dados do arquivo JSON ou criar novo
 if os.path.exists(DB_PATH):
@@ -10,27 +12,18 @@ else:
     lancamentos = []
 
 
-#  http://127.0.0.1:8000/lancamentos
 def test_listar_lancamentos():
     resultado = listar_lancamentos()
     assert isinstance(resultado, list) #verifica se o retorno é mesmo uma lista
     assert len(resultado) > 0 #verifica se está retornando algo
 
 
-
-#  http://127.0.0.1:8000/lancamentos/{id}
-
-def buscar_por_id(id: int):
-    for item in lancamentos:
-        if item["id"] == id:
-            return item
-    raise HTTPException(status_code=404, detail="Lançamento não encontrado")
-
 def test_buscar_por_id_existente():
     resultado = buscar_por_id(1)
     assert resultado["id"] == 1
     assert "tipo" in resultado
     assert "valor" in resultado
+
 
 def test_buscar_por_id_inexistente():
     with pytest.raises(HTTPException) as exc_info:
@@ -41,36 +34,44 @@ def test_buscar_por_id_inexistente():
         assert exc_info.value.detail == "Lançamento não encontrado"
 
 
-
-#  http://127.0.0.1:8000/lancamentos/tipo/{tipo}
-def filtrar_por_tipo(tipo: str):
-    tipo = tipo.lower()
-    if tipo not in ["despesa", "receita"]:
-        raise HTTPException(status_code=400, detail="Tipo deve ser 'despesa' ou 'receita'")
-    return [l for l in lancamentos if l["tipo"] == tipo]
-
-#  http://127.0.0.1:8000/lancamentos/categoria/{categoria}
-
-def filtrar_por_categoria(categoria: str):
-    return [l for l in lancamentos if l["categoria"].lower() == categoria.lower()]
-
-#  http://127.0.0.1:8000/resumo
-
-def resumo():
-    total_despesas = sum(l["valor"] for l in lancamentos if l["tipo"] == "despesa")
-    total_receitas = sum(l["valor"] for l in lancamentos if l["tipo"] == "receita")
-    saldo = total_receitas - total_despesas
-    return {
-        "total_despesas": round(total_despesas, 2),
-        "total_receitas": round(total_receitas, 2),
-        "saldo": round(saldo, 2)
-    }
+def test_filtrar_por_tipo_receita():
+    resultado = filtrar_por_tipo("receita")
+    assert isinstance(resultado, list) # Verifica se o retorno é uma lista
+    assert all(l["tipo"] == "receita" for l in resultado)  # Se houver algum resultado, verifique se todos são do tipo 'receita'
 
 
-#Testando um metodo POST
-# Modelo para criação de novos lançamentos
+def test_filtrar_por_tipo_despesa():
+    resultado = filtrar_por_tipo("despesa")
+    assert isinstance(resultado, list)
+    assert all(l["tipo"] == "despesa" for l in resultado)
 
 
+def test_filtrar_por_tipo_invalido():
+    with pytest.raises(HTTPException) as exc_info:
+        filtrar_por_tipo("investimento")  # tipo inválido
+
+    assert exc_info.value.status_code == 400
+    assert exc_info.value.detail == "Tipo deve ser 'despesa' ou 'receita'"
+
+
+def test_filtrar_categoria():
+    resultado = filtrar_por_categoria("Transporte")
+    assert all(l["categoria"].lower() == "transporte" for l in resultado)
+
+
+def test_resumo():
+    resultado = resumo()
+
+    # Verifica se é um dicionário
+    assert isinstance(resultado, dict)
+
+    # Verifica se as chaves esperadas estão presentes
+    assert "total_despesas" in resultado
+    assert "total_receitas" in resultado
+    assert "saldo" in resultado
+
+"""
+FUNÇÕES NÃO TESTADAS:
 
 # Função auxiliar para salvar no JSON
 def salvar_dados():
@@ -99,3 +100,5 @@ class LancamentoInput(BaseModel):
     forma_pagamento: Optional[str] = None
     forma_recebimento: Optional[str] = None
     efetivado: bool
+
+"""
