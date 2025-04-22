@@ -3,7 +3,6 @@ from fastapi import HTTPException
 
 from src.main import *
 
-
 # Carregar os dados do arquivo JSON ou criar novo
 if os.path.exists(DB_PATH):
     with open(DB_PATH, "r", encoding="utf-8") as f:
