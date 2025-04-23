@@ -7,7 +7,6 @@ from pydantic import BaseModel
 from typing import Optional
 
 
-
 app = FastAPI()
 
 #MODELO DO PROFESSOR
@@ -23,7 +22,7 @@ async def funcaoteste():
     return {"teste": True, "num_aleatório: ": random.randint(0, 1000)}
 #=====================================================
 
-DB_PATH = "lancamentos_despesas_receitas.json"
+DB_PATH = "../lancamentos_despesas_receitas.json"
 
 # Carregar os dados do arquivo JSON ou criar novo
 if os.path.exists(DB_PATH):
