@@ -1,22 +1,32 @@
 from src.main import *
+import json
 import pytest
 from fastapi import HTTPException
 
+#carregando os dados usando uma FIXTURE:
+@pytest.fixture
+def carregar_lancamentos_do_json():
+    lancamentos.clear()
 
-def test_listar_lancamentos():
+    with open("lancamentos_despesas_receitas.json", encoding="utf-8") as f:
+        dados = json.load(f)
+        lancamentos.extend(dados)
+
+def test_listar_lancamentos(carregar_lancamentos_do_json):
     resultado = listar_lancamentos()
     assert isinstance(resultado, list) #verifica se o retorno é mesmo uma lista
+    print(resultado)
     assert len(resultado) > 0 #verifica se está retornando algo
 
 
-def test_buscar_por_id_existente():
-    resultado = buscar_por_id(1)
-    assert resultado["id"] == 1
+def test_buscar_por_id_existente(carregar_lancamentos_do_json):
+    resultado = buscar_por_id(2)
+    assert resultado["id"] == 2
     assert "tipo" in resultado
     assert "valor" in resultado
 
 
-def test_buscar_por_id_inexistente():
+def test_buscar_por_id_inexistente(carregar_lancamentos_do_json):
     with pytest.raises(HTTPException) as exc_info:
         buscar_por_id(999)  # id que não existe
 
@@ -25,19 +35,19 @@ def test_buscar_por_id_inexistente():
         assert exc_info.value.detail == "Lançamento não encontrado"
 
 
-def test_filtrar_por_tipo_receita():
+def test_filtrar_por_tipo_receita(carregar_lancamentos_do_json):
     resultado = filtrar_por_tipo("receita")
     assert isinstance(resultado, list) # Verifica se o retorno é uma lista
     assert all(l["tipo"] == "receita" for l in resultado)  # Se houver algum resultado, verifique se todos são do tipo 'receita'
 
 
-def test_filtrar_por_tipo_despesa():
+def test_filtrar_por_tipo_despesa(carregar_lancamentos_do_json):
     resultado = filtrar_por_tipo("despesa")
     assert isinstance(resultado, list)
     assert all(l["tipo"] == "despesa" for l in resultado)
 
 
-def test_filtrar_por_tipo_invalido():
+def test_filtrar_por_tipo_invalido(carregar_lancamentos_do_json):
     with pytest.raises(HTTPException) as exc_info:
         filtrar_por_tipo("investimento")  # tipo inválido
 
@@ -45,12 +55,12 @@ def test_filtrar_por_tipo_invalido():
     assert exc_info.value.detail == "Tipo deve ser 'despesa' ou 'receita'"
 
 
-def test_filtrar_categoria():
+def test_filtrar_categoria(carregar_lancamentos_do_json):
     resultado = filtrar_por_categoria("Transporte")
     assert all(l["categoria"].lower() == "transporte" for l in resultado)
 
 
-def test_resumo():
+def test_resumo(carregar_lancamentos_do_json):
     resultado = resumo()
 
     # Verifica se é um dicionário
