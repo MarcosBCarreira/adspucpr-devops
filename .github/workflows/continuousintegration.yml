@@ -49,5 +49,5 @@ jobs:
 
       - name: Run tests with pytest
 
-        run: |                    
-          pytest --doctest-modules --junitxml=junit/test-results.xml --cov=src --cov-report=xml --cov-report=html
+        run: |                   
+          PYTHONPATH=src pytest test/test.py --doctest-modules --junitxml=junit/test-results.xml --cov=src --cov-report=xml --cov-report=html
