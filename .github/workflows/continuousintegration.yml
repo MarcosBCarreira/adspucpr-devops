@@ -48,7 +48,6 @@ jobs:
           pip install pytest pytest-cov
 
       - name: Run tests with pytest
-        env:
-          PYTHONPATH: ../src
+
         run: |                    
           pytest --doctest-modules --junitxml=junit/test-results.xml --cov=src --cov-report=xml --cov-report=html
